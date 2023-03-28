@@ -44,3 +44,5 @@ jobs:
         mv .pio/build/dural/APPLICATION.uf2 .pio/build/dural/GP2040-DURAL.uf2
         pio run -e flatbox-rev-4
         mv .pio/build/flatbox-rev-4/APPLICATION.uf2 .pio/build/flatbox-rev-4/GP2040-FlatboxRev4.uf2
+        pio run -e kb2040
+        mv .pio/build/kb2040/APPLICATION.uf2 .pio/build/kb2040/GP2040-KB2040.uf2
