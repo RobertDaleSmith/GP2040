@@ -26,11 +26,12 @@
 #define PIN_BUTTON_L2   9  // Not connected
 #define PIN_BUTTON_L3   10 // Not connected
 #define PIN_BUTTON_R3   20 // Not connected
-#define PIN_BUTTON_A1   12 // Not connected
+#define PIN_BUTTON_A1   13 // Not connected
 #define PIN_BUTTON_A2   13 // Not connected
 
 #define DEFAULT_SOCD_MODE SOCD_MODE_NEUTRAL
 #define BUTTON_LAYOUT BUTTON_LAYOUT_ARCADE
+#define PIN_ACTIVE_HIGH 1
 
 #define BOARD_LEDS_PIN 17
 

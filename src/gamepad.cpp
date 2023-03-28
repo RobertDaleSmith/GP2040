@@ -50,7 +50,11 @@ void Gamepad::setup()
 	{
 		gpio_init(gamepadMappings[i]->pin);             // Initialize pin
 		gpio_set_dir(gamepadMappings[i]->pin, GPIO_IN); // Set as INPUT
-		gpio_pull_up(gamepadMappings[i]->pin);          // Set as PULLUP
+		#ifdef PIN_ACTIVE_HIGH
+			gpio_pull_down(gamepadMappings[i]->pin);    // Set as PULLDOWN
+		#else
+			gpio_pull_up(gamepadMappings[i]->pin);      // Set as PULLUP
+		#endif
 	}
 
 	#ifdef PIN_SETTINGS
@@ -63,7 +67,11 @@ void Gamepad::setup()
 void Gamepad::read()
 {
 	// Need to invert since we're using pullups
-	uint32_t values = ~gpio_get_all();
+	#ifdef PIN_ACTIVE_HIGH
+		uint32_t values = gpio_get_all();
+	#else
+		uint32_t values = ~gpio_get_all();
+	#endif
 
 	#ifdef PIN_SETTINGS
 	state.aux = 0
