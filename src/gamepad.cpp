@@ -9,6 +9,14 @@
 #include "storage.h"
 #include "display.h"
 #include "OneBitDisplay.h"
+#include "SNESpad.h"
+
+// Pins for SNES controller
+#define LATCH_PIN 6
+#define CLOCK_PIN 5
+#define DATA_PIN 7
+
+SNESpad snesPad = SNESpad(LATCH_PIN, CLOCK_PIN, DATA_PIN);
 
 void Gamepad::setup()
 {
@@ -46,63 +54,68 @@ void Gamepad::setup()
 		mapButtonA1, mapButtonA2
 	};
 
-	for (int i = 0; i < GAMEPAD_DIGITAL_INPUT_COUNT; i++)
-	{
-		gpio_init(gamepadMappings[i]->pin);             // Initialize pin
-		gpio_set_dir(gamepadMappings[i]->pin, GPIO_IN); // Set as INPUT
-		#ifdef PIN_ACTIVE_HIGH
-			gpio_pull_down(gamepadMappings[i]->pin);    // Set as PULLDOWN
-		#else
-			gpio_pull_up(gamepadMappings[i]->pin);      // Set as PULLUP
-		#endif
-	}
+	// for (int i = 0; i < GAMEPAD_DIGITAL_INPUT_COUNT; i++)
+	// {
+	// 	gpio_init(gamepadMappings[i]->pin);             // Initialize pin
+	// 	gpio_set_dir(gamepadMappings[i]->pin, GPIO_IN); // Set as INPUT
+	// 	#ifdef PIN_ACTIVE_HIGH
+	// 		gpio_pull_down(gamepadMappings[i]->pin);    // Set as PULLDOWN
+	// 	#else
+	// 		gpio_pull_up(gamepadMappings[i]->pin);      // Set as PULLUP
+	// 	#endif
+	// }
 
-	#ifdef PIN_SETTINGS
-		gpio_init(PIN_SETTINGS);             // Initialize pin
-		gpio_set_dir(PIN_SETTINGS, GPIO_IN); // Set as INPUT
-		gpio_pull_up(PIN_SETTINGS);          // Set as PULLUP
-	#endif
+	// #ifdef PIN_SETTINGS
+	// 	gpio_init(PIN_SETTINGS);             // Initialize pin
+	// 	gpio_set_dir(PIN_SETTINGS, GPIO_IN); // Set as INPUT
+	// 	gpio_pull_up(PIN_SETTINGS);          // Set as PULLUP
+	// #endif
 }
 
 void Gamepad::read()
 {
 	// Need to invert since we're using pullups
-	#ifdef PIN_ACTIVE_HIGH
-		uint32_t values = gpio_get_all();
-	#else
-		uint32_t values = ~gpio_get_all();
-	#endif
+	// #ifdef PIN_ACTIVE_HIGH
+	// 	uint32_t values = gpio_get_all();
+	// #else
+	// 	uint32_t values = ~gpio_get_all();
+	// #endif
 
-	#ifdef PIN_SETTINGS
-	state.aux = 0
-		| ((values & (1 << PIN_SETTINGS)) ? (1 << 0) : 0)
-	;
-	#endif
+	// #ifdef PIN_SETTINGS
+	// state.aux = 0
+	// 	| ((values & (1 << PIN_SETTINGS)) ? (1 << 0) : 0)
+	// ;
+	// #endif
 
+	uint32_t values = snesPad.buttons(SNES_MOUSE_FAST);
+
+	// Read dpad inputs
 	state.dpad = 0
-		| ((values & mapDpadUp->pinMask)    ? (options.invertYAxis ? mapDpadDown->buttonMask : mapDpadUp->buttonMask) : 0)
-		| ((values & mapDpadDown->pinMask)  ? (options.invertYAxis ? mapDpadUp->buttonMask : mapDpadDown->buttonMask) : 0)
-		| ((values & mapDpadLeft->pinMask)  ? mapDpadLeft->buttonMask  : 0)
-		| ((values & mapDpadRight->pinMask) ? mapDpadRight->buttonMask : 0)
+		| ((values & SNES_UP)    ? (options.invertYAxis ? mapDpadDown->buttonMask : mapDpadUp->buttonMask) : 0)
+		| ((values & SNES_DOWN)  ? (options.invertYAxis ? mapDpadUp->buttonMask : mapDpadDown->buttonMask) : 0)
+		| ((values & SNES_LEFT)  ? mapDpadLeft->buttonMask  : 0)
+		| ((values & SNES_RIGHT) ? mapDpadRight->buttonMask : 0)
 	;
 
+	// Read button inputs
 	state.buttons = 0
-		| ((values & mapButtonB1->pinMask)  ? mapButtonB1->buttonMask  : 0)
-		| ((values & mapButtonB2->pinMask)  ? mapButtonB2->buttonMask  : 0)
-		| ((values & mapButtonB3->pinMask)  ? mapButtonB3->buttonMask  : 0)
-		| ((values & mapButtonB4->pinMask)  ? mapButtonB4->buttonMask  : 0)
-		| ((values & mapButtonL1->pinMask)  ? mapButtonL1->buttonMask  : 0)
-		| ((values & mapButtonR1->pinMask)  ? mapButtonR1->buttonMask  : 0)
-		| ((values & mapButtonL2->pinMask)  ? mapButtonL2->buttonMask  : 0)
-		| ((values & mapButtonR2->pinMask)  ? mapButtonR2->buttonMask  : 0)
-		| ((values & mapButtonS1->pinMask)  ? mapButtonS1->buttonMask  : 0)
-		| ((values & mapButtonS2->pinMask)  ? mapButtonS2->buttonMask  : 0)
-		| ((values & mapButtonL3->pinMask)  ? mapButtonL3->buttonMask  : 0)
-		| ((values & mapButtonR3->pinMask)  ? mapButtonR3->buttonMask  : 0)
-		| ((values & mapButtonA1->pinMask)  ? mapButtonA1->buttonMask  : 0)
-		| ((values & mapButtonA2->pinMask)  ? mapButtonA2->buttonMask  : 0)
+		| ((values & SNES_B)  ? mapButtonB1->buttonMask  : 0)
+		| ((values & SNES_A)  ? mapButtonB2->buttonMask  : 0)
+		| ((values & SNES_Y)  ? mapButtonB3->buttonMask  : 0)
+		| ((values & SNES_X)  ? mapButtonB4->buttonMask  : 0)
+		| ((values & SNES_L)  ? mapButtonL1->buttonMask  : 0)
+		| ((values & SNES_R)  ? mapButtonR1->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonL2->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonR2->buttonMask  : 0)
+		| ((values & SNES_SELECT) ? mapButtonS1->buttonMask  : 0)
+		| ((values & SNES_START)  ? mapButtonS2->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonL3->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonR3->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonA1->buttonMask  : 0)
+		| ((values & 0)  ? mapButtonA2->buttonMask  : 0)
 	;
 
+    // No analog, but could read them here with analogRead() or fill outside of this method
 	state.lx = GAMEPAD_JOYSTICK_MID;
 	state.ly = GAMEPAD_JOYSTICK_MID;
 	state.rx = GAMEPAD_JOYSTICK_MID;
